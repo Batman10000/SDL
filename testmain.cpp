@@ -20,6 +20,7 @@ SDL_Window* window = NULL;
 SDL_Renderer* render = NULL;
 SDL_Event event;
 int boxcount=6;
+int boxstart=0;
 vector<bool>boxfull(boxcount,0);
 class brick {
 public:
@@ -27,6 +28,7 @@ public:
 	int x2;
 	int y1;
 	int y2;
+	int life;
 	int vy = 0;
 	bool show = 0;
 public:
@@ -37,37 +39,59 @@ public:
 		y2 = y12;
 	boxRGBA(render, x1, y1, x2, y2, 255, 153, 102, 255);
 	}
+	void hit(){
+     life--;
+	}
 	
 };
 class circle
 {
 public:
   int x=300;
-  int y=740;
+  int y=730;
   int r=10;
+    int teta;
+    float vx;
+    float vy;
+   float v;
+   void bullinit(int t1, float v){
+	   teta = t1;
+	   vx=v*cos(teta);
+	   vy=v*sin(teta);
+   }
   circle()
   {
       filledCircleRGBA(render , x , y , r , 0, 0, 255, 255);
+      filledCircleRGBA(render , x , y , r , 0, 0, 0, 255);
+
   }
+
   void move()
   {
-    int teta=45;
-    int dx=1;
-    int dy=tan(teta)*dx;
-    while (600 - x >10)
-    {
-      x+=dx;
-      y-=dy;
-      SDL_SetRenderDrawColor(render, 0x00, 0x00, 0x00, 0x00);
-      SDL_RenderClear(render);
+	  while(true){
+   if(x>=590||x<=10)
+   vx*=(-1);
+   if(y>=740||y<=10)
+   vy*=(-1);
+   x+=vx;
+   y+=vy;
+   if(y>=740){
+	 filledCircleRGBA(render , x , 740 , r , 0, 0, 255, 255); break;
+   }
       filledCircleRGBA(render , x , y , r , 0, 0, 255, 255);
-      SDL_Delay(10);
-      SDL_RenderPresent(render);
-    }
+	 
+	   SDL_RenderPresent(render);
+       SDL_Delay(20);
+       filledCircleRGBA(render , x , y , r , 0, 0, 0, 255);
+      
+
+	
+	  }
+
   }
 };
 
-vector<brick>box(6);
+vector<brick>box(boxcount);
 void init() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	window = SDL_CreateWindow("Project", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -98,10 +122,10 @@ void playertime() {
 				return;
 			}
 			// else {}
-	
+
 	}
-	SDL_SetRenderDrawColor(render, 0xFF, 0xFF, 0xFF, 0xFF);
-	SDL_RenderClear(render);
+	//SDL_SetRenderDrawColor(render, 0xFF, 0xFF, 0xFF, 0xFF);
+	//SDL_RenderClear(render);
 	}
 }
 void timetogo() {
@@ -111,9 +135,14 @@ void timetogo() {
 				quit = true;
 				return;
 			}
+			     circle c;
+				c.bullinit(30,10);
+	             c.move();
+				 break;
 		}
-		SDL_SetRenderDrawColor(render, 0xFF, 0xFF, 0xFF, 0xFF);
-		SDL_RenderClear(render);
+		break;
+		//SDL_SetRenderDrawColor(render, 0xFF, 0xFF, 0xFF, 0xFF);
+		//SDL_RenderClear(render);
 	}
 	SDL_RenderPresent(render);
 	//SDL_Delay(20);
@@ -121,8 +150,23 @@ void timetogo() {
 
 void beforePLayerTurn() {
 	boxcount+=6;
-	//box.resize(boxCount);
-	//boxfull.resize(boxcount);
+	boxstart+=6;
+	box.resize(boxcount);
+	boxfull.resize(boxcount);
+		int bricknum=rand()%6+1;
+	for(int i=0;i<bricknum;i++){
+		int l=rand()%boxcount; 
+	while(boxfull[l]!=1){
+		boxfull[l]==1;  
+		break;
+	};
+	}
+    for(int i=0;i<boxcount;i++){
+		if(boxfull[i]==1){
+			box[i].vy+=1;
+			box[i].initialize(i*85,i*85+70,box[i].vy*40,box[i].vy*40+50);
+		}
+	}
 }
 
 void close() {
@@ -133,8 +177,7 @@ void close() {
 }
 void GameLoop() {
 	while (!quit) {
-
-		playertime();
+		//playertime();
 		if (!quit) {
 			timetogo();
 		}
@@ -147,7 +190,6 @@ int main() {
 	srand(time(0));
 	init();
 	circle c;
-	c.move();
 	int bricknum=rand()%6+1;
 	for(int i=0;i<bricknum;i++){
 	boxfull[rand()%6]=1;
@@ -158,6 +200,9 @@ int main() {
 
 		}
 	}
+	//thickLineRGBA
+	//c.bullinit(30,10);
+	//c.move();
 	SDL_RenderPresent(render);
 	if (!quit) {
 		GameLoop();
